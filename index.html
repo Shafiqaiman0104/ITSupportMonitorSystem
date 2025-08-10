@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VentureRush Support</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, sans-serif; 
+      margin: 0; 
+      background: #f4f6f8;
+      color: #333;
+    }
+    .navbar {
+      background: #007bff;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .navbar .logo {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .navbar ul {
+      list-style: none;
+      display: flex;
+      gap: 15px;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar ul li a {
+      color: white;
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    .navbar ul li a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .container {
+      width: 60%;
+      margin: 20px auto;
+    }
+    h1 { 
+      text-align: center; 
+      margin-bottom: 20px;
+    }
+
+    /* Controls layout */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .search-box {
+      width: 100%;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: white;
+    }
+
+    /* Filters row for desktop */
+    .filters-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-box {
+      flex: 0 0 auto;
+      min-width: 150px;
+    }
+    .filter-box select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: white;
+    }
+    .refresh-container {
+      flex: 0 0 auto;
+    }
+    button.refresh {
+      background: #3BB8DB;
+      color: white;
+      padding: 10px 14px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    button.refresh:hover {
+      background: #0056b3;
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      overflow-x: auto;
+    }
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      min-width: 800px;
+    }
+    th, td { 
+      padding: 12px 10px; 
+      text-align: left; 
+      white-space: nowrap;
+    }
+    th { 
+      background: black; 
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    tr:nth-child(even) { background: #f9f9f9; }
+    tr:hover { background: #eef5ff; transition: 0.2s; }
+    button { 
+      padding: 6px 12px; 
+      cursor: pointer; 
+      border-radius: 4px; 
+      border: none;
+      font-size: 13px;
+      transition: background 0.2s ease;
+    }
+    button.solve { 
+      background: #28a745; 
+      color: white; 
+    }
+    button.solve:hover { 
+      background: #218838; 
+    }
+
+    /* Status color styles */
+    .status-warning {
+      background-color: #fff3cd;
+      color: #856404;
+      font-weight: bold;
+      border-radius: 6px;
+      padding: 4px 8px;
+      display: inline-block;
+    }
+    .status-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+      font-weight: bold;
+      border-radius: 6px;
+      padding: 4px 8px;
+      display: inline-block;
+    }
+    .status-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      font-weight: bold;
+      border-radius: 6px;
+      padding: 4px 8px;
+      display: inline-block;
+    }
+
+    /* Mobile layout */
+    @media (max-width: 768px) {
+      .container {
+        width: 95%;
+      }
+      th, td { padding: 8px; font-size: 12px; }
+      .filters-row {
+        flex-direction: column;
+      }
+      .filter-box, .refresh-container {
+        width: 100%;
+      }
+      button.refresh {
+        width: 100%;
+        padding: 10px;
+        height: 40px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">🧑🏻‍💻 VentureRush Support</div>
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="dashboard.html">Reports</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div class="controls">
+      <!-- Search bar -->
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Search...">
+      </div>
+
+      <!-- Filters and refresh -->
+      <div class="filters-row">
+        <div class="filter-box">
+          <select id="statusFilter">
+            <option value="">Filter Alert Status</option>
+            <option value="pending">Pending</option>
+            <option value="solve">Solved</option>
+          </select>
+        </div>
+        <div class="filter-box">
+          <select id="monthFilter">
+            <option value="">Filter by Month</option>
+          </select>
+        </div>
+        <div class="refresh-container">
+          <button class="refresh" onclick="fetchAlerts()">🔄 Refresh</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table id="alertTable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Message</th>
+            <th>Status</th>
+            <th>User Id</th>
+            <th>Conversation Id</th>
+            <th>Thread Id</th>
+            <th>Alert Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbxqbrfz2owYrB3vaHJnXRmdyO6xYWA5YbRYTrjQEsUAm04FOkUeQrUM6PsNeGQtbLcs/exec";
+    let alertsData = [];
+
+    function formatMalaysiaTime(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleString("en-GB", {
+        timeZone: "Asia/Kuala_Lumpur",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      }) + " (MYT)";
+    }
+
+    function formatAlertStatus(alertStatus) {
+      if (!alertStatus) return "";
+      const parts = alertStatus.split(" ");
+      if (parts[0].toLowerCase() === "solve" && parts.length > 1) {
+        const dateString = parts.slice(1).join(" ");
+        const date = new Date(dateString);
+        if (!isNaN(date)) {
+          return `solve ${date.toLocaleDateString("en-GB", { timeZone: "Asia/Kuala_Lumpur" })} ${date.toLocaleTimeString("en-GB", { timeZone: "Asia/Kuala_Lumpur" })} (MYT)`;
+        }
+      }
+      return alertStatus;
+    }
+
+    function populateMonthFilter() {
+      const monthFilter = document.getElementById("monthFilter");
+      monthFilter.innerHTML = `<option value="">Filter by Month</option>`;
+      const monthsSet = new Set();
+
+      alertsData.forEach(row => {
+        const date = new Date(row["Timestamp"]);
+        if (!isNaN(date)) {
+          const monthYear = date.toLocaleString("en-GB", { month: "long", year: "numeric", timeZone: "Asia/Kuala_Lumpur" });
+          monthsSet.add(monthYear);
+        }
+      });
+
+      Array.from(monthsSet)
+        .sort((a, b) => new Date(b) - new Date(a))
+        .forEach(monthYear => {
+          const option = document.createElement("option");
+          option.value = monthYear;
+          option.textContent = monthYear;
+          monthFilter.appendChild(option);
+        });
+    }
+
+    async function fetchAlerts() {
+      const res = await fetch(scriptUrl);
+      alertsData = await res.json();
+      populateMonthFilter();
+      renderTable();
+    }
+
+    function renderTable() {
+      const searchValue = document.getElementById("searchInput").value.toLowerCase();
+      const statusValue = document.getElementById("statusFilter").value.toLowerCase();
+      const monthValue = document.getElementById("monthFilter").value;
+      const tbody = document.querySelector("#alertTable tbody");
+      tbody.innerHTML = "";
+
+      alertsData
+        .filter(row => {
+          const matchesSearch = Object.values(row).some(val =>
+            String(val).toLowerCase().includes(searchValue)
+          );
+          const matchesStatus = statusValue ? row["Alert Status"].toLowerCase().startsWith(statusValue) : true;
+          const matchesMonth = monthValue
+            ? new Date(row["Timestamp"]).toLocaleString("en-GB", { month: "long", year: "numeric", timeZone: "Asia/Kuala_Lumpur" }) === monthValue
+            : true;
+          return matchesSearch && matchesStatus && matchesMonth;
+        })
+        .forEach(row => {
+          const tr = document.createElement("tr");
+
+          // Assign class based on Status
+          let statusClass = "";
+          const statusLower = row["Status"].toLowerCase();
+          if (statusLower === "warning") statusClass = "status-warning";
+          else if (statusLower === "danger") statusClass = "status-danger";
+          else if (statusLower === "info") statusClass = "status-info";
+
+          tr.innerHTML = `
+            <td>${formatMalaysiaTime(row["Timestamp"])}</td>
+            <td>${row["Message"]}</td>
+            <td><span class="${statusClass}">${row["Status"]}</span></td>
+            <td>${row["User Id"]}</td>
+            <td>${row["Conversation Id"]}</td>
+            <td>${row["Thread Id"]}</td>
+            <td>${formatAlertStatus(row["Alert Status"])}</td>
+            <td>
+              ${row["Alert Status"].startsWith("pending") 
+                ? `<button class="solve" onclick="solveAlert('${row["Conversation Id"]}','${row["Thread Id"]}')">Solve</button>`
+                : ""}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+    }
+
+    async function solveAlert(conversationId, threadId) {
+      if (!confirm("Mark this alert as solved?")) return;
+      await fetch(scriptUrl, {
+        method: "POST",
+        body: new URLSearchParams({
+          action: "updateAlert",
+          conversationId,
+          threadId
+        })
+      });
+      fetchAlerts();
+    }
+
+    document.getElementById("searchInput").addEventListener("input", renderTable);
+    document.getElementById("statusFilter").addEventListener("change", renderTable);
+    document.getElementById("monthFilter").addEventListener("change", renderTable);
+
+    fetchAlerts();
+  </script>
+</body>
+</html>
