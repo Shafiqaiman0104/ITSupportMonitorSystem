@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Alert Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    button { padding: 5px 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<h2>Alert Manager</h2>
+
+<table id="alerts-table">
+  <thead>
+    <tr>
+      <th>Timestamp</th>
+      <th>Message</th>
+      <th>Status</th>
+      <th>User Id</th>
+      <th>Conversation Id</th>
+      <th>Thread Id</th>
+      <th>Alert Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="8">Loading data...</td></tr>
+  </tbody>
+</table>
+
+<script>
+  // Your Apps Script Web App URL (replace this with your actual deployed URL)
+  const SCRIPT_ID = "AKfycbwb05-iLeA5viy3JOoRPcXDhRWXY38EZl5c0IBbXUzlWL9lMFAE979x7a59ihXbH3eC";
+  const BASE_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec`;
+
+  // Fetch data from doGet endpoint
+  async function fetchData() {
+    try {
+      const res = await fetch(BASE_URL);
+      const json = await res.json();
+      if (!json.success) {
+        alert('Failed to load data: ' + (json.message || 'Unknown error'));
+        return;
+      }
+      renderTable(json.rows);
+    } catch (err) {
+      alert('Error fetching data: ' + err.message);
+    }
+  }
+
+  // Render the table rows with data and Solve buttons
+  function renderTable(rows) {
+    const tbody = document.querySelector('#alerts-table tbody');
+    tbody.innerHTML = '';
+
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8">No data found.</td></tr>';
+      return;
+    }
+
+    rows.forEach(row => {
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>${row.Timestamp || ''}</td>
+        <td>${row.Message || ''}</td>
+        <td>${row.Status || ''}</td>
+        <td>${row['User Id'] || ''}</td>
+        <td>${row['Conversation Id'] || ''}</td>
+        <td>${row['Thread Id'] || ''}</td>
+        <td>${row['Alert Status'] || ''}</td>
+        <td><button type="button">Solve</button></td>
+      `;
+
+      const btn = tr.querySelector('button');
+      btn.onclick = () => onSolveClick(row, btn);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Called when user clicks Solve button
+  async function onSolveClick(row, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Updating...';
+
+    // Prepare updated alert status with current datetime
+    const now = new Date();
+    const formattedDate = now.toISOString().slice(0,19).replace('T', ' ');
+    const newAlertStatus = `solve - ${formattedDate}`;
+
+    const payload = {
+      action: 'editAlert',
+      userId: row['User Id'],
+      conversationId: row['Conversation Id'],
+      threadId: row['Thread Id'],
+      alertStatus: newAlertStatus
+    };
+
+    try {
+      const res = await fetch(BASE_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        alert('Alert status updated!');
+        fetchData(); // refresh table
+      } else {
+        alert('Failed to update alert: ' + (json.message || 'Unknown error'));
+        btn.disabled = false;
+        btn.textContent = 'Solve';
+      }
+    } catch (err) {
+      alert('Error updating alert: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = 'Solve';
+    }
+  }
+
+  // Load data on page load
+  fetchData();
+</script>
+
+</body>
+</html>
