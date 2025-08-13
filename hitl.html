@@ -154,35 +154,55 @@
       padding: 15px;
       overflow-y: auto;
       background: #f9fafb;
+      display: flex;
+      flex-direction: column;
     }
 
     .msg {
       max-width: 70%;
       padding: 8px 12px;
-      margin-bottom: 8px;
+      margin-bottom: 20px;
       border-radius: 8px;
       position: relative;
       font-size: 14px;
       line-height: 1.4;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      word-wrap: break-word;
     }
 
+    /* Message types alignment */
     .bot-msg {
       background: #e0f2fe;
-      align-self: flex-start;
+      align-self: flex-end; /* right */
     }
 
     .user-msg {
       background: #dcfce7;
-      align-self: flex-end;
+      align-self: flex-start; /* left */
     }
 
+    .agent-msg {
+      background: #fef9c3;
+      align-self: flex-end; /* right */
+    }
+
+    /* Timestamp */
     .timestamp {
       font-size: 10px;
       color: #6b7280;
       position: absolute;
       bottom: -14px;
+    }
+
+    .user-msg .timestamp {
+      left: 4px;
+      right: auto;
+    }
+
+    .agent-msg .timestamp,
+    .bot-msg .timestamp {
       right: 4px;
+      left: auto;
     }
 
     /* Input Box */
@@ -249,12 +269,10 @@ let TOKEN = null;
 let currentSession = null;
 let paused = false;
 let allSessions = []; 
-const agentName = "Shafiq";
 
 const ADMIN_EMAIL = "venturerush.cs@gmail.com";
 const ADMIN_PASSWORD = "venturerush123";
 
-// Login and get token
 async function loginAndGetToken() {
   const res = await fetch(`${API_BASE}/auth/login/basic/default`, {
     method: "POST",
@@ -267,11 +285,9 @@ async function loginAndGetToken() {
     alert("Failed to get token. Check credentials.");
     return;
   }
-  console.log("New token:", TOKEN);
   loadSessions();
 }
 
-// Load all sessions
 async function loadSessions() {
   const res = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions`, {
     headers: { "Authorization": `Bearer ${TOKEN}` }
@@ -280,7 +296,6 @@ async function loadSessions() {
   renderSessionList(allSessions);
 }
 
-// Filter sessions
 async function filterSessions() {
   const searchTerm = document.getElementById("searchInput").value.trim();
   const url = `${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions?pausedOnly=false&searchText=${encodeURIComponent(searchTerm)}`;
@@ -291,7 +306,6 @@ async function filterSessions() {
   renderSessionList(filtered);
 }
 
-// Render session list
 function renderSessionList(sessions) {
   const list = document.getElementById("sessionList");
   list.innerHTML = "";
@@ -311,7 +325,6 @@ function renderSessionList(sessions) {
   });
 }
 
-// Load chat history for a session
 async function loadSessionData() {
   if (!currentSession) return;
   const res = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}`, {
@@ -325,8 +338,18 @@ async function loadSessionData() {
     messages.forEach(m => {
       const text = m.text || m.raw_message?.text || "[empty]";
       const div = document.createElement("div");
-      div.className = `msg ${m.source === "bot" ? "bot-msg" : "user-msg"}`;
+
+      if (m.source === "bot") div.className = "msg bot-msg";
+      else if (m.source === "agent") div.className = "msg agent-msg";
+      else div.className = "msg user-msg";
+
       div.textContent = `${m.source}: ${text}`;
+
+      const timestamp = document.createElement("div");
+      timestamp.className = "timestamp";
+      timestamp.textContent = new Date(m.created_on || Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      div.appendChild(timestamp);
+
       chatBox.appendChild(div);
     });
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -335,7 +358,6 @@ async function loadSessionData() {
   }
 }
 
-// Send message to session
 async function sendMessage(customMsg) {
   const msg = customMsg || document.getElementById("msgInput").value;
   if (!currentSession || !msg) return;
@@ -347,13 +369,10 @@ async function sendMessage(customMsg) {
     },
     body: JSON.stringify({ message: msg })
   });
-  if (!customMsg) {
-    document.getElementById("msgInput").value = "";
-  }
+  if (!customMsg) document.getElementById("msgInput").value = "";
   loadSessionData();
 }
 
-// Pause/Resume bot
 async function togglePause() {
   if (!currentSession) return;
   if (!paused) {
@@ -361,7 +380,7 @@ async function togglePause() {
       method: "POST",
       headers: { "Authorization": `Bearer ${TOKEN}` }
     });
-    await sendMessage(`-Agent ${agentName} has taken over this conversation`);
+    await sendMessage(`-Agent has taken over this conversation`);
     paused = true;
     document.getElementById("sessionLabel").textContent = `Session ${String(currentSession)} (Paused)`;
   } else {
@@ -369,16 +388,13 @@ async function togglePause() {
       method: "POST",
       headers: { "Authorization": `Bearer ${TOKEN}` }
     });
-    await sendMessage(`-Agent ${agentName} has left the chat, chatbot is back in action`);
+    await sendMessage(`-Agent has left the chat, chatbot is back in action`);
     paused = false;
     document.getElementById("sessionLabel").textContent = `Session ${String(currentSession)}`;
   }
 }
 
-// Auto-refresh messages
-setInterval(() => {
-  if (currentSession) loadSessionData();
-}, 3000);
+setInterval(() => { if (currentSession) loadSessionData(); }, 3000);
 
 loginAndGetToken();
 </script>
