@@ -13,6 +13,8 @@
     li:hover { background: #eee; }
     .bot-msg { background: #e1f5fe; padding: 5px; margin: 2px 0; border-radius: 5px; }
     .user-msg { background: #c8e6c9; padding: 5px; margin: 2px 0; border-radius: 5px; }
+    .controls { padding: 10px; border-bottom: 1px solid #ccc; background: #fafafa; display: flex; gap: 10px; }
+    .controls button { padding: 5px 10px; }
   </style>
 </head>
 <body>
@@ -23,6 +25,9 @@
 </div>
 
 <div class="chat">
+  <div class="controls">
+    <button id="pauseBtn" onclick="togglePause()" disabled>Pause Bot</button>
+  </div>
   <div class="messages" id="messages"></div>
   <div class="input-box">
     <input type="text" id="msgInput" placeholder="Type your message">
@@ -35,6 +40,7 @@ const BOT_ID = "mk-ai-chatbot";
 const API_BASE = "https://venturerush.up.railway.app/api/v1";
 let TOKEN = null;
 let currentSession = null;
+let paused = false;
 
 // 🔑 Admin credentials (visible in browser - quick hack only)
 const ADMIN_EMAIL = "venturerush.cs@gmail.com";
@@ -70,7 +76,13 @@ async function loadSessions() {
   sessions.forEach(s => {
     const li = document.createElement("li");
     li.textContent = `Session ${s.id}`;
-    li.onclick = () => { currentSession = s.id; loadSessionData(); };
+    li.onclick = () => { 
+      currentSession = s.id; 
+      paused = false; 
+      document.getElementById("pauseBtn").textContent = "Pause Bot";
+      document.getElementById("pauseBtn").disabled = false;
+      loadSessionData(); 
+    };
     list.appendChild(li);
   });
 }
@@ -113,15 +125,36 @@ async function sendMessage() {
   loadSessionData();
 }
 
-// Auto-refresh current session
+// 🛑 Pause/Resume bot
+async function togglePause() {
+  if (!currentSession) return;
+  if (!paused) {
+    // Take control (pause bot)
+    await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/take`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${TOKEN}` }
+    });
+    paused = true;
+    document.getElementById("pauseBtn").textContent = "Resume Bot";
+  } else {
+    // Release control (resume bot)
+    await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/release`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${TOKEN}` }
+    });
+    paused = false;
+    document.getElementById("pauseBtn").textContent = "Pause Bot";
+  }
+}
+
+// Auto-refresh current session messages
 setInterval(() => {
   if (currentSession) loadSessionData();
 }, 3000);
 
-// Start process
+// Start
 loginAndGetToken();
 </script>
 
 </body>
 </html>
-
