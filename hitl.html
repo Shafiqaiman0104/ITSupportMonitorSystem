@@ -4,90 +4,216 @@
   <title>IT Support HITL Panel</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      display: flex;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       height: 100vh;
-      overflow: hidden;
+      display: flex;
+      background: #f3f4f6;
     }
+
+    /* Sidebar */
     .sidebar {
-      width: 200px;
-      border-right: 1px solid #ccc;
-      padding: 10px;
-      background: #fff;
+      width: 230px;
+      background: #ffffff;
+      border-right: 1px solid #e5e7eb;
+      padding: 15px;
       display: flex;
       flex-direction: column;
-      height: 100%;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #374151;
+    }
+
+    .search-box {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      z-index: 5;
+    }
+
+    .search-box input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 30px 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .search-box::after {
+      content: '🔍';
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+    }
+
+    #sessionList {
+      margin: 0;
+      padding: 0;
+      flex: 1;
       overflow-y: auto;
     }
+
+    #sessionList li {
+      list-style: none;
+      padding: 8px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #sessionList li:hover {
+      background: #f3f4f6;
+    }
+
+    #sessionList li.active {
+      background: #3b82f6;
+      color: white;
+    }
+
+    /* Chat Section */
     .chat {
       flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
     }
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      border-bottom: 1px solid #ccc;
-      padding: 10px;
-      background: #f9f9f9;
-    }
-    .input-box {
-      display: flex;
-      gap: 5px;
-      padding: 10px;
-      border-top: 1px solid #ccc;
-      background: #fff;
-    }
-    .input-box input {
-      flex: 1;
-      padding: 5px;
-    }
-    li {
-      list-style: none;
-      padding: 5px;
-      cursor: pointer;
-    }
-    li:hover {
-      background: #eee;
-    }
-    .bot-msg {
-      background: #e1f5fe;
-      padding: 5px;
-      margin: 2px 0;
-      border-radius: 5px;
-    }
-    .user-msg {
-      background: #c8e6c9;
-      padding: 5px;
-      margin: 2px 0;
-      border-radius: 5px;
-    }
+
     .controls {
-      padding: 10px;
-      border-bottom: 1px solid #ccc;
-      background: #fafafa;
       display: flex;
-      gap: 10px;
       align-items: center;
+      justify-content: space-between;
+      padding: 10px 15px;
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
       position: sticky;
       top: 0;
       z-index: 10;
     }
+
     .controls span {
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 14px;
     }
-    .controls button {
-      padding: 5px 10px;
+
+    /* Toggle Button */
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 28px;
     }
-    .search-box {
-      margin-bottom: 10px;
+
+    .toggle-switch input {
+      display: none;
     }
-    .search-box input {
-      width: 100%;
-      padding: 5px;
-      box-sizing: border-box;
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #d1d5db;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #3b82f6;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(32px);
+    }
+
+    /* Messages */
+    .messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f9fafb;
+    }
+
+    .msg {
+      max-width: 70%;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      position: relative;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .bot-msg {
+      background: #e0f2fe;
+      align-self: flex-start;
+    }
+
+    .user-msg {
+      background: #dcfce7;
+      align-self: flex-end;
+    }
+
+    .timestamp {
+      font-size: 10px;
+      color: #6b7280;
+      position: absolute;
+      bottom: -14px;
+      right: 4px;
+    }
+
+    /* Input Box */
+    .input-box {
+      display: flex;
+      padding: 10px;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      gap: 6px;
+    }
+
+    .input-box input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .input-box button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .input-box button:hover {
+      background: #2563eb;
     }
   </style>
 </head>
@@ -104,7 +230,10 @@
 <div class="chat">
   <div class="controls">
     <span id="sessionLabel">No Session Selected</span>
-    <button id="pauseBtn" onclick="togglePause()" disabled>Pause Bot</button>
+    <label class="toggle-switch">
+      <input type="checkbox" id="pauseToggle" onchange="togglePause()">
+      <span class="slider"></span>
+    </label>
   </div>
   <div class="messages" id="messages"></div>
   <div class="input-box">
@@ -130,10 +259,7 @@ async function loginAndGetToken() {
   const res = await fetch(`${API_BASE}/auth/login/basic/default`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD
-    })
+    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD })
   });
   const data = await res.json();
   TOKEN = data.payload && data.payload.jwt;
@@ -154,7 +280,7 @@ async function loadSessions() {
   renderSessionList(allSessions);
 }
 
-// Search sessions from Botpress API
+// Filter sessions
 async function filterSessions() {
   const searchTerm = document.getElementById("searchInput").value.trim();
   const url = `${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions?pausedOnly=false&searchText=${encodeURIComponent(searchTerm)}`;
@@ -171,13 +297,14 @@ function renderSessionList(sessions) {
   list.innerHTML = "";
   sessions.forEach(s => {
     const li = document.createElement("li");
-    li.textContent = `Session ${s.id}`;
+    li.textContent = `Session ${String(s.id)}`;
+    if (currentSession === s.id) li.classList.add("active");
     li.onclick = () => { 
       currentSession = s.id; 
       paused = false; 
-      document.getElementById("pauseBtn").textContent = "Pause Bot";
-      document.getElementById("pauseBtn").disabled = false;
-      document.getElementById("sessionLabel").textContent = `Session ${currentSession}`;
+      document.getElementById("pauseToggle").checked = false;
+      document.getElementById("sessionLabel").textContent = `Session ${String(currentSession)}`;
+      renderSessionList(sessions);
       loadSessionData(); 
     };
     list.appendChild(li);
@@ -198,7 +325,7 @@ async function loadSessionData() {
     messages.forEach(m => {
       const text = m.text || m.raw_message?.text || "[empty]";
       const div = document.createElement("div");
-      div.className = m.source === "bot" ? "bot-msg" : "user-msg";
+      div.className = `msg ${m.source === "bot" ? "bot-msg" : "user-msg"}`;
       div.textContent = `${m.source}: ${text}`;
       chatBox.appendChild(div);
     });
@@ -236,8 +363,7 @@ async function togglePause() {
     });
     await sendMessage(`-Agent ${agentName} has taken over this conversation`);
     paused = true;
-    document.getElementById("pauseBtn").textContent = "Resume Bot";
-    document.getElementById("sessionLabel").textContent = `Session ${currentSession} (Paused)`;
+    document.getElementById("sessionLabel").textContent = `Session ${String(currentSession)} (Paused)`;
   } else {
     await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/unpause`, {
       method: "POST",
@@ -245,8 +371,7 @@ async function togglePause() {
     });
     await sendMessage(`-Agent ${agentName} has left the chat, chatbot is back in action`);
     paused = false;
-    document.getElementById("pauseBtn").textContent = "Pause Bot";
-    document.getElementById("sessionLabel").textContent = `Session ${currentSession}`;
+    document.getElementById("sessionLabel").textContent = `Session ${String(currentSession)}`;
   }
 }
 
