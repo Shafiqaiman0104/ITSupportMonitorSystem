@@ -186,25 +186,6 @@
       align-self: flex-end; /* right */
     }
 
-    /* Timestamp */
-    .timestamp {
-      font-size: 10px;
-      color: #6b7280;
-      position: absolute;
-      bottom: -14px;
-    }
-
-    .user-msg .timestamp {
-      left: 4px;
-      right: auto;
-    }
-
-    .agent-msg .timestamp,
-    .bot-msg .timestamp {
-      right: 4px;
-      left: auto;
-    }
-
     /* Input Box */
     .input-box {
       display: flex;
@@ -344,12 +325,6 @@ async function loadSessionData() {
       else div.className = "msg user-msg";
 
       div.textContent = `${m.source}: ${text}`;
-
-      const timestamp = document.createElement("div");
-      timestamp.className = "timestamp";
-      timestamp.textContent = new Date(m.created_on || Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-      div.appendChild(timestamp);
-
       chatBox.appendChild(div);
     });
     chatBox.scrollTop = chatBox.scrollHeight;
