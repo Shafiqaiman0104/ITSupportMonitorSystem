@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>VentureRush Support - Hitl</title>
+  <title>VentureRush Support - HITL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -59,7 +59,7 @@
       display: flex;
       flex-direction: column;
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-      transition: all 0.3s ease;
+      transition: transform 0.3s ease;
     }
     .sidebar h3 { margin: 0 0 10px; font-size: 16px; font-weight: bold; color: #374151; }
     .search-box { position: sticky; top: 0; background: white; padding-bottom: 10px; margin-bottom: 10px; z-index: 5; }
@@ -70,9 +70,10 @@
     #sessionList li.active { background: #3b82f6; color: white; }
 
     /* Chat */
-    .chat { flex: 1; display: flex; flex-direction: column; }
+    .chat { flex: 1; display: flex; flex-direction: column; transition: transform 0.3s ease; }
     .controls { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: #ffffff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 10; }
-    .controls span { font-weight: 600; font-size: 14px; }
+    .controls .back-btn { display: none; cursor: pointer; font-size: 18px; margin-right: 10px; }
+    .controls span { font-weight: 600; font-size: 14px; flex: 1; }
 
     .toggle-switch { position: relative; width: 60px; height: 28px; }
     .toggle-switch input { display: none; }
@@ -94,20 +95,15 @@
 
     /* Mobile responsiveness */
     @media (max-width: 768px) {
-      .main-content { flex-direction: column; }
-      .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #e5e7eb;
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 10px;
-        gap: 10px;
-      }
-      .sidebar h3 { display: none; }
-      .search-box { flex: 1; min-width: 150px; }
-      #sessionList { display: flex; flex-direction: row; gap: 8px; overflow-x: auto; flex: 1; }
-      #sessionList li { white-space: nowrap; padding: 6px 12px; margin-bottom: 0; }
+      .main-content { flex-direction: row; position: relative; }
+
+      .sidebar { position: absolute; top: 0; left: 0; height: 100%; z-index: 20; transform: translateX(0); width: 80%; max-width: 300px; }
+      .sidebar.hidden { transform: translateX(-110%); }
+
+      .chat { flex: 1; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: #f3f4f6; z-index: 10; transform: translateX(100%); }
+      .chat.active { transform: translateX(0); }
+
+      .controls .back-btn { display: inline-block; }
       .messages .msg { max-width: 90%; }
       .input-box { flex-direction: column; gap: 6px; }
       .input-box input, .input-box button { width: 100%; }
@@ -126,9 +122,9 @@
     </ul>
   </nav>
 
-  <!-- Main content: sidebar + chat -->
+  <!-- Main content -->
   <div class="main-content">
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
       <h3>VentureRush HITL</h3>
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search by User ID" oninput="filterSessions()">
@@ -136,8 +132,9 @@
       <ul id="sessionList"></ul>
     </div>
 
-    <div class="chat">
+    <div class="chat" id="chat">
       <div class="controls">
+        <span class="back-btn" onclick="showSidebar()">←</span>
         <span id="sessionLabel">No User Selected</span>
         <label class="toggle-switch">
           <input type="checkbox" id="pauseToggle" onchange="togglePause()">
@@ -162,6 +159,14 @@ let allSessions = [];
 
 const ADMIN_EMAIL = "venturerush.cs@gmail.com";
 const ADMIN_PASSWORD = "venturerush123";
+
+const sidebar = document.getElementById("sidebar");
+const chat = document.getElementById("chat");
+
+function showSidebar() {
+  sidebar.classList.remove("hidden");
+  chat.classList.remove("active");
+}
 
 // Login
 async function loginAndGetToken() {
@@ -194,7 +199,7 @@ async function filterSessions() {
   renderSessionList(filtered);
 }
 
-// Render sidebar with (Paused) label
+// Render session list
 function renderSessionList(sessions) {
   const list = document.getElementById("sessionList");
   list.innerHTML = "";
@@ -215,6 +220,11 @@ async function selectSession(session) {
   document.getElementById("sessionLabel").textContent = `User ${currentSession}` + (paused ? " (Paused)" : "");
   renderSessionList(allSessions);
   await loadSessionData();
+  // On mobile, hide sidebar and show chat
+  if(window.innerWidth <= 768){
+    sidebar.classList.add("hidden");
+    chat.classList.add("active");
+  }
 }
 
 // Load messages
@@ -280,4 +290,4 @@ loginAndGetToken();
 </script>
 
 </body>
-    </html>
+        </html>
