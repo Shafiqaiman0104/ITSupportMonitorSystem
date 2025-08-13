@@ -3,18 +3,84 @@
 <head>
   <title>IT Support HITL Panel</title>
   <style>
-    body { font-family: Arial; display: flex; gap: 20px; margin: 0; }
-    .sidebar { width: 200px; border-right: 1px solid #ccc; padding: 10px; }
-    .chat { flex: 1; display: flex; flex-direction: column; }
-    .messages { flex: 1; overflow-y: auto; border-bottom: 1px solid #ccc; padding: 10px; background: #f9f9f9; }
-    .input-box { display: flex; gap: 5px; padding: 10px; }
-    .input-box input { flex: 1; padding: 5px; }
-    li { list-style: none; padding: 5px; cursor: pointer; }
-    li:hover { background: #eee; }
-    .bot-msg { background: #e1f5fe; padding: 5px; margin: 2px 0; border-radius: 5px; }
-    .user-msg { background: #c8e6c9; padding: 5px; margin: 2px 0; border-radius: 5px; }
-    .controls { padding: 10px; border-bottom: 1px solid #ccc; background: #fafafa; display: flex; gap: 10px; }
-    .controls button { padding: 5px 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 200px;
+      border-right: 1px solid #ccc;
+      padding: 10px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow-y: auto;
+    }
+    .chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      border-bottom: 1px solid #ccc;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+    .input-box {
+      display: flex;
+      gap: 5px;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+      background: #fff;
+    }
+    .input-box input {
+      flex: 1;
+      padding: 5px;
+    }
+    li {
+      list-style: none;
+      padding: 5px;
+      cursor: pointer;
+    }
+    li:hover {
+      background: #eee;
+    }
+    .bot-msg {
+      background: #e1f5fe;
+      padding: 5px;
+      margin: 2px 0;
+      border-radius: 5px;
+    }
+    .user-msg {
+      background: #c8e6c9;
+      padding: 5px;
+      margin: 2px 0;
+      border-radius: 5px;
+    }
+    .controls {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      background: #fafafa;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .controls span {
+      font-weight: bold;
+    }
+    .controls button {
+      padding: 5px 10px;
+    }
   </style>
 </head>
 <body>
@@ -26,6 +92,7 @@
 
 <div class="chat">
   <div class="controls">
+    <span id="sessionLabel">No Session Selected</span>
     <button id="pauseBtn" onclick="togglePause()" disabled>Pause Bot</button>
   </div>
   <div class="messages" id="messages"></div>
@@ -41,12 +108,12 @@ const API_BASE = "https://venturerush.up.railway.app/api/v1";
 let TOKEN = null;
 let currentSession = null;
 let paused = false;
+const agentName = "Shafiq"; // 📝 Change this to your dynamic agent name
 
-// 🔑 Admin credentials (visible in browser - quick hack only)
 const ADMIN_EMAIL = "venturerush.cs@gmail.com";
 const ADMIN_PASSWORD = "venturerush123";
 
-// Get fresh token at page load
+// Login and get token
 async function loginAndGetToken() {
   const res = await fetch(`${API_BASE}/auth/login/basic/default`, {
     method: "POST",
@@ -81,6 +148,7 @@ async function loadSessions() {
       paused = false; 
       document.getElementById("pauseBtn").textContent = "Pause Bot";
       document.getElementById("pauseBtn").disabled = false;
+      document.getElementById("sessionLabel").textContent = `Session ${currentSession}`;
       loadSessionData(); 
     };
     list.appendChild(li);
@@ -110,8 +178,8 @@ async function loadSessionData() {
   }
 }
 
-async function sendMessage() {
-  const msg = document.getElementById("msgInput").value;
+async function sendMessage(customMsg) {
+  const msg = customMsg || document.getElementById("msgInput").value;
   if (!currentSession || !msg) return;
   await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/message`, {
     method: "POST",
@@ -121,41 +189,43 @@ async function sendMessage() {
     },
     body: JSON.stringify({ message: msg })
   });
-  document.getElementById("msgInput").value = "";
+  if (!customMsg) {
+    document.getElementById("msgInput").value = "";
+  }
   loadSessionData();
 }
 
-// 🛑 Pause/Resume bot
+// Pause/Resume bot with notification
 async function togglePause() {
   if (!currentSession) return;
   if (!paused) {
-    // Take control (pause bot)
     await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/pause`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${TOKEN}` }
     });
+    await sendMessage(`-Agent ${agentName} has taken over this conversation`);
     paused = true;
     document.getElementById("pauseBtn").textContent = "Resume Bot";
+    document.getElementById("sessionLabel").textContent = `Session ${currentSession} (Paused)`;
   } else {
-    // Release control (resume bot)
     await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/unpause`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${TOKEN}` }
     });
+    await sendMessage(`-Agent ${agentName} has left the chat, chatbot is back in action`);
     paused = false;
     document.getElementById("pauseBtn").textContent = "Pause Bot";
+    document.getElementById("sessionLabel").textContent = `Session ${currentSession}`;
   }
 }
 
-// Auto-refresh current session messages
+// Auto-refresh messages
 setInterval(() => {
   if (currentSession) loadSessionData();
 }, 3000);
 
-// Start
 loginAndGetToken();
 </script>
 
 </body>
 </html>
-
