@@ -130,7 +130,7 @@ async function togglePause() {
   if (!currentSession) return;
   if (!paused) {
     // Take control (pause bot)
-    await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/take`, {
+    await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/pause`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${TOKEN}` }
     });
@@ -138,7 +138,7 @@ async function togglePause() {
     document.getElementById("pauseBtn").textContent = "Resume Bot";
   } else {
     // Release control (resume bot)
-    await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/release`, {
+    await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/unpause`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${TOKEN}` }
     });
@@ -158,3 +158,4 @@ loginAndGetToken();
 
 </body>
 </html>
+
