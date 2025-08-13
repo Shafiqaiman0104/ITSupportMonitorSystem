@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VentureRush Support - Hitl</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #f3f4f6;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: #007bff;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .navbar .logo { font-size: 18px; font-weight: bold; }
+    .navbar ul {
+      list-style: none;
+      display: flex;
+      gap: 15px;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar ul li a {
+      color: white;
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    .navbar ul li a:hover { background: rgba(255,255,255,0.2); }
+
+    /* Main content layout */
+    .main-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 230px;
+      background: #ffffff;
+      border-right: 1px solid #e5e7eb;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+    }
+    .sidebar h3 { margin: 0 0 10px; font-size: 16px; font-weight: bold; color: #374151; }
+    .search-box { position: sticky; top: 0; background: white; padding-bottom: 10px; margin-bottom: 10px; z-index: 5; }
+    .search-box input { width: 100%; box-sizing: border-box; padding: 8px 30px 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; }
+    #sessionList { margin: 0; padding: 0; flex: 1; overflow-y: auto; }
+    #sessionList li { list-style: none; padding: 8px; margin-bottom: 4px; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+    #sessionList li:hover { background: #f3f4f6; }
+    #sessionList li.active { background: #3b82f6; color: white; }
+
+    /* Chat */
+    .chat { flex: 1; display: flex; flex-direction: column; }
+    .controls { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: #ffffff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 10; }
+    .controls span { font-weight: 600; font-size: 14px; }
+
+    .toggle-switch { position: relative; width: 60px; height: 28px; }
+    .toggle-switch input { display: none; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #d1d5db; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #3b82f6; }
+    input:checked + .slider:before { transform: translateX(32px); }
+
+    .messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9fafb; display: flex; flex-direction: column; }
+    .msg { max-width: 70%; padding: 8px 12px; margin-bottom: 20px; border-radius: 8px; position: relative; font-size: 14px; line-height: 1.4; box-shadow: 0 1px 3px rgba(0,0,0,0.05); word-wrap: break-word; }
+    .bot-msg { background: #e0f2fe; align-self: flex-end; }
+    .user-msg { background: #dcfce7; align-self: flex-start; }
+    .agent-msg { background: #fef9c3; align-self: flex-end; }
+
+    .input-box { display: flex; padding: 10px; background: white; border-top: 1px solid #e5e7eb; gap: 6px; }
+    .input-box input { flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; }
+    .input-box button { background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 8px 14px; cursor: pointer; transition: background 0.2s; }
+    .input-box button:hover { background: #2563eb; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">🧑🏻‍💻 VentureRush Support</div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#">HITL</a></li>
+      <li><a href="dashboard.html">Reports</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main content: sidebar + chat -->
+  <div class="main-content">
+    <div class="sidebar">
+      <h3>VentureRush HITL</h3>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search by User ID" oninput="filterSessions()">
+      </div>
+      <ul id="sessionList"></ul>
+    </div>
+
+    <div class="chat">
+      <div class="controls">
+        <span id="sessionLabel">No User Selected</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="pauseToggle" onchange="togglePause()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="input-box">
+        <input type="text" id="msgInput" placeholder="Type your message">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+<script>
+const BOT_ID = "mk-ai-chatbot";
+const API_BASE = "https://venturerush.up.railway.app/api/v1";
+let TOKEN = null;
+let currentSession = null;
+let paused = false;
+let allSessions = []; 
+
+const ADMIN_EMAIL = "venturerush.cs@gmail.com";
+const ADMIN_PASSWORD = "venturerush123";
+
+// Login
+async function loginAndGetToken() {
+  const res = await fetch(`${API_BASE}/auth/login/basic/default`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD })
+  });
+  const data = await res.json();
+  TOKEN = data.payload?.jwt;
+  if (!TOKEN) { alert("Failed to get token."); return; }
+  loadSessions();
+}
+
+// Load all sessions
+async function loadSessions() {
+  const res = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions`, {
+    headers: { "Authorization": `Bearer ${TOKEN}` }
+  });
+  allSessions = await res.json();
+  renderSessionList(allSessions);
+}
+
+// Filter sessions
+async function filterSessions() {
+  const searchTerm = document.getElementById("searchInput").value.trim();
+  const url = `${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions?pausedOnly=false&searchText=${encodeURIComponent(searchTerm)}`;
+  const res = await fetch(url, { headers: { "Authorization": `Bearer ${TOKEN}` } });
+  const filtered = await res.json();
+  renderSessionList(filtered);
+}
+
+// Render sidebar with (Paused) label
+function renderSessionList(sessions) {
+  const list = document.getElementById("sessionList");
+  list.innerHTML = "";
+  sessions.forEach(s => {
+    const li = document.createElement("li");
+    li.textContent = `User ${s.id}` + (s.isPaused === 1 ? " (Paused)" : "");
+    if (currentSession === s.id) li.classList.add("active");
+    li.onclick = () => selectSession(s);
+    list.appendChild(li);
+  });
+}
+
+// Select session
+async function selectSession(session) {
+  currentSession = session.id;
+  paused = session.isPaused === 1;
+  document.getElementById("pauseToggle").checked = paused;
+  document.getElementById("sessionLabel").textContent = `User ${currentSession}` + (paused ? " (Paused)" : "");
+  renderSessionList(allSessions);
+  await loadSessionData();
+}
+
+// Load messages
+async function loadSessionData() {
+  if (!currentSession) return;
+  const res = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}`, {
+    headers: { "Authorization": `Bearer ${TOKEN}` }
+  });
+  const data = await res.json();
+  const messages = Array.isArray(data) ? data : []; // <-- FIXED
+  const chatBox = document.getElementById("messages");
+  chatBox.innerHTML = "";
+
+  if (messages.length > 0) {
+    messages.forEach(m => {
+      const div = document.createElement("div");
+      if (m.source === "bot") div.className = "msg bot-msg";
+      else if (m.source === "agent") div.className = "msg agent-msg";
+      else div.className = "msg user-msg";
+      div.textContent = `${m.source}: ${m.text || m.raw_message?.text || "[empty]"}`;
+      chatBox.appendChild(div);
+    });
+    chatBox.scrollTop = chatBox.scrollHeight;
+  } else {
+    chatBox.innerHTML = "<i>No messages found</i>";
+  }
+}
+
+// Send message
+async function sendMessage(customMsg) {
+  const msg = customMsg || document.getElementById("msgInput").value;
+  if (!currentSession || !msg) return;
+  await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/message`, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ message: msg })
+  });
+  if (!customMsg) document.getElementById("msgInput").value = "";
+  await loadSessionData();
+}
+
+// Toggle pause
+async function togglePause() {
+  if (!currentSession) return;
+  if (!paused) {
+    await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/pause`, { method:"POST", headers:{ "Authorization": `Bearer ${TOKEN}` } });
+    await sendMessage("-Agent has taken over this conversation");
+    paused = true;
+  } else {
+    await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/unpause`, { method:"POST", headers:{ "Authorization": `Bearer ${TOKEN}` } });
+    await sendMessage("-Agent has left the chat, chatbot is back in action");
+    paused = false;
+  }
+  document.getElementById("pauseToggle").checked = paused;
+  document.getElementById("sessionLabel").textContent = `User ${currentSession}` + (paused ? " (Paused)" : "");
+}
+
+// Auto refresh every 3s
+setInterval(() => { if (currentSession) loadSessionData(); }, 3000);
+
+// Start
+loginAndGetToken();
+</script>
+
+</body>
+</html>
