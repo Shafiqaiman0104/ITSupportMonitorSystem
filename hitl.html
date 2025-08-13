@@ -81,12 +81,23 @@
     .controls button {
       padding: 5px 10px;
     }
+    .search-box {
+      margin-bottom: 10px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
 
 <div class="sidebar">
   <h3>Sessions</h3>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search by User ID" oninput="filterSessions()">
+  </div>
   <ul id="sessionList"></ul>
 </div>
 
@@ -108,7 +119,8 @@ const API_BASE = "https://venturerush.up.railway.app/api/v1";
 let TOKEN = null;
 let currentSession = null;
 let paused = false;
-const agentName = "Shafiq"; // 📝 Change this to your dynamic agent name
+let allSessions = []; 
+const agentName = "Shafiq";
 
 const ADMIN_EMAIL = "venturerush.cs@gmail.com";
 const ADMIN_PASSWORD = "venturerush123";
@@ -133,11 +145,28 @@ async function loginAndGetToken() {
   loadSessions();
 }
 
+// Load all sessions
 async function loadSessions() {
   const res = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions`, {
     headers: { "Authorization": `Bearer ${TOKEN}` }
   });
-  const sessions = await res.json();
+  allSessions = await res.json();
+  renderSessionList(allSessions);
+}
+
+// Search sessions from Botpress API
+async function filterSessions() {
+  const searchTerm = document.getElementById("searchInput").value.trim();
+  const url = `${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions?pausedOnly=false&searchText=${encodeURIComponent(searchTerm)}`;
+  const res = await fetch(url, {
+    headers: { "Authorization": `Bearer ${TOKEN}` }
+  });
+  const filtered = await res.json();
+  renderSessionList(filtered);
+}
+
+// Render session list
+function renderSessionList(sessions) {
   const list = document.getElementById("sessionList");
   list.innerHTML = "";
   sessions.forEach(s => {
@@ -155,6 +184,7 @@ async function loadSessions() {
   });
 }
 
+// Load chat history for a session
 async function loadSessionData() {
   if (!currentSession) return;
   const res = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}`, {
@@ -178,6 +208,7 @@ async function loadSessionData() {
   }
 }
 
+// Send message to session
 async function sendMessage(customMsg) {
   const msg = customMsg || document.getElementById("msgInput").value;
   if (!currentSession || !msg) return;
@@ -195,7 +226,7 @@ async function sendMessage(customMsg) {
   loadSessionData();
 }
 
-// Pause/Resume bot with notification
+// Pause/Resume bot
 async function togglePause() {
   if (!currentSession) return;
   if (!paused) {
