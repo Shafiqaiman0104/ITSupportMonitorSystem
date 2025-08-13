@@ -51,7 +51,7 @@ async function loginAndGetToken() {
     })
   });
   const data = await res.json();
-  TOKEN = data.payload && data.payload.token;
+  TOKEN = data.payload && data.payload.jwt;
   if (!TOKEN) {
     alert("Failed to get token. Check credentials.");
     return;
@@ -124,3 +124,4 @@ loginAndGetToken();
 
 </body>
 </html>
+
