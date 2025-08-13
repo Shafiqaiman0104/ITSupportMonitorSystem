@@ -120,13 +120,13 @@ async function filterSessions() {
   renderSessionList(filtered);
 }
 
-// Render sidebar
+// Render sidebar with (Paused) label
 function renderSessionList(sessions) {
   const list = document.getElementById("sessionList");
   list.innerHTML = "";
   sessions.forEach(s => {
     const li = document.createElement("li");
-    li.textContent = `Session ${s.id}`;
+    li.textContent = `Session ${s.id}` + (s.isPaused === 1 ? " (Paused)" : "");
     if (currentSession === s.id) li.classList.add("active");
     li.onclick = () => selectSession(s);
     list.appendChild(li);
