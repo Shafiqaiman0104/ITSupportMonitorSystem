@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IT Support HITL Panel</title>
+  <style>
+    body { font-family: Arial; display: flex; gap: 20px; margin: 0; }
+    .sidebar { width: 200px; border-right: 1px solid #ccc; padding: 10px; }
+    .chat { flex: 1; display: flex; flex-direction: column; }
+    .messages { flex: 1; overflow-y: auto; border-bottom: 1px solid #ccc; padding: 10px; background: #f9f9f9; }
+    .input-box { display: flex; gap: 5px; padding: 10px; }
+    .input-box input { flex: 1; padding: 5px; }
+    li { list-style: none; padding: 5px; cursor: pointer; }
+    li:hover { background: #eee; }
+    .bot-msg { background: #e1f5fe; padding: 5px; margin: 2px 0; border-radius: 5px; }
+    .user-msg { background: #c8e6c9; padding: 5px; margin: 2px 0; border-radius: 5px; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h3>Sessions</h3>
+  <ul id="sessionList"></ul>
+</div>
+
+<div class="chat">
+  <div class="messages" id="messages"></div>
+  <div class="input-box">
+    <input type="text" id="msgInput" placeholder="Type your message">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+const BOT_ID = "mk-ai-chatbot";
+const API_BASE = "https://venturerush.up.railway.app/api/v1";
+let TOKEN = null;
+let currentSession = null;
+
+// 🔑 Admin credentials (visible in browser - quick hack only)
+const ADMIN_EMAIL = "venturerush.cs@gmail.com";
+const ADMIN_PASSWORD = "venturerush123";
+
+// Get fresh token at page load
+async function loginAndGetToken() {
+  const res = await fetch(`${API_BASE}/auth/login/basic/default`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD
+    })
+  });
+  const data = await res.json();
+  TOKEN = data.payload && data.payload.token;
+  if (!TOKEN) {
+    alert("Failed to get token. Check credentials.");
+    return;
+  }
+  console.log("New token:", TOKEN);
+  loadSessions();
+}
+
+async function loadSessions() {
+  const res = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions`, {
+    headers: { "Authorization": `Bearer ${TOKEN}` }
+  });
+  const sessions = await res.json();
+  const list = document.getElementById("sessionList");
+  list.innerHTML = "";
+  sessions.forEach(s => {
+    const li = document.createElement("li");
+    li.textContent = `Session ${s.id}`;
+    li.onclick = () => { currentSession = s.id; loadSessionData(); };
+    list.appendChild(li);
+  });
+}
+
+async function loadSessionData() {
+  if (!currentSession) return;
+  const res = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}`, {
+    headers: { "Authorization": `Bearer ${TOKEN}` }
+  });
+  const messages = await res.json();
+  const chatBox = document.getElementById("messages");
+  chatBox.innerHTML = "";
+
+  if (Array.isArray(messages) && messages.length > 0) {
+    messages.forEach(m => {
+      const text = m.text || m.raw_message?.text || "[empty]";
+      const div = document.createElement("div");
+      div.className = m.source === "bot" ? "bot-msg" : "user-msg";
+      div.textContent = `${m.source}: ${text}`;
+      chatBox.appendChild(div);
+    });
+    chatBox.scrollTop = chatBox.scrollHeight;
+  } else {
+    chatBox.innerHTML = "<i>No messages found</i>";
+  }
+}
+
+async function sendMessage() {
+  const msg = document.getElementById("msgInput").value;
+  if (!currentSession || !msg) return;
+  await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${currentSession}/message`, {
+    method: "POST",
+    headers: { 
+      "Authorization": `Bearer ${TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: msg })
+  });
+  document.getElementById("msgInput").value = "";
+  loadSessionData();
+}
+
+// Auto-refresh current session
+setInterval(() => {
+  if (currentSession) loadSessionData();
+}, 3000);
+
+// Start process
+loginAndGetToken();
+</script>
+
+</body>
+</html>
