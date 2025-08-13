@@ -200,6 +200,7 @@
     <div class="logo">🧑🏻‍💻 VentureRush Support</div>
     <ul>
       <li><a href="#">Home</a></li>
+      <li><a href="hitlTab.html">HITL</a></li>
       <li><a href="dashboard.html">Reports</a></li>
     </ul>
   </nav>
@@ -227,6 +228,7 @@
         </div>
         <div class="refresh-container">
           <button class="refresh" onclick="fetchAlerts()">🔄 Refresh</button>
+          <button class="refresh" id="hitlBtn">🧑‍💻 HITL MODE</button> 
         </div>
       </div>
     </div>
@@ -248,6 +250,9 @@
         <tbody></tbody>
       </table>
     </div>
+  <div id="hitlWrapper" style="flex: 1; display: none; height: 600px;">
+    <!-- iframe will be injected here -->
+  </div>
   </div>
 
   <script>
@@ -375,6 +380,27 @@
     document.getElementById("monthFilter").addEventListener("change", renderTable);
 
     fetchAlerts();
+
+const hitlBtn = document.getElementById("hitlBtn");
+let hitlVisible = false;
+
+hitlBtn.addEventListener("click", () => {
+  const hitlWrapper = document.getElementById("hitlWrapper");
+  if (!hitlVisible) {
+    // show iframe
+    hitlWrapper.innerHTML = `<iframe src="hitl.html" style="width:100%; height:100%; border:none;"></iframe>`;
+    hitlWrapper.style.display = "block";
+    hitlVisible = true;
+    hitlBtn.textContent = "❌ Close HITL";
+  } else {
+    // hide iframe
+    hitlWrapper.innerHTML = "";
+    hitlWrapper.style.display = "none";
+    hitlVisible = false;
+    hitlBtn.textContent = "🧑‍💻 HITL MODE";
+  }
+});
+
   </script>
 </body>
 </html>
