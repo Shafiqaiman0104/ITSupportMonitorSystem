@@ -56,7 +56,7 @@
 <body>
 
 <div class="sidebar">
-  <h3>Sessions</h3>
+  <h3>VentureRush HITL</h3>
   <div class="search-box">
     <input type="text" id="searchInput" placeholder="Search by User ID" oninput="filterSessions()">
   </div>
@@ -65,7 +65,7 @@
 
 <div class="chat">
   <div class="controls">
-    <span id="sessionLabel">No Session Selected</span>
+    <span id="sessionLabel">No User Selected</span>
     <label class="toggle-switch">
       <input type="checkbox" id="pauseToggle" onchange="togglePause()">
       <span class="slider"></span>
@@ -126,7 +126,7 @@ function renderSessionList(sessions) {
   list.innerHTML = "";
   sessions.forEach(s => {
     const li = document.createElement("li");
-    li.textContent = `Session ${s.id}` + (s.isPaused === 1 ? " (Paused)" : "");
+    li.textContent = `User ${s.id}` + (s.isPaused === 1 ? " (Paused)" : "");
     if (currentSession === s.id) li.classList.add("active");
     li.onclick = () => selectSession(s);
     list.appendChild(li);
@@ -138,7 +138,7 @@ async function selectSession(session) {
   currentSession = session.id;
   paused = session.isPaused === 1;
   document.getElementById("pauseToggle").checked = paused;
-  document.getElementById("sessionLabel").textContent = `Session ${currentSession}` + (paused ? " (Paused)" : "");
+  document.getElementById("sessionLabel").textContent = `User ${currentSession}` + (paused ? " (Paused)" : "");
   renderSessionList(allSessions);
   await loadSessionData();
 }
@@ -195,7 +195,7 @@ async function togglePause() {
     paused = false;
   }
   document.getElementById("pauseToggle").checked = paused;
-  document.getElementById("sessionLabel").textContent = `Session ${currentSession}` + (paused ? " (Paused)" : "");
+  document.getElementById("sessionLabel").textContent = `User ${currentSession}` + (paused ? " (Paused)" : "");
 }
 
 // Auto refresh every 3s
