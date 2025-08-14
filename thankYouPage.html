@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thank You - ToyyinPay</title>
+<title>Thank You</title>
 <style>
   body {
     font-family: 'Segoe UI', sans-serif;
@@ -45,11 +45,27 @@
   button:hover {
     background-color: #1976d2;
   }
+  .checkmark {
+      font-size: 3.5rem;
+      color: #28a745;
+  }
+    @media (min-width: 768px) {
+      .container {
+        max-width: 500px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .checkmark {
+        font-size: 4rem;
+      }
+  }
 </style>
 </head>
 <body>
 
 <div class="container">
+  <div class="checkmark">✔️</div>
   <h1>Thank You!</h1>
   <p>Your campsite booking is confirmed. We’ll prepare your spot and see you soon!</p>
   <button onclick="sendThankYou()">Back to Chat</button>
