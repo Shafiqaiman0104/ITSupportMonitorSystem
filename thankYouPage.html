@@ -5,62 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payment Successful</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #f8f9fa;
-      margin: 0;
-      padding: 0;
-    }
+    body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f9fa; }
     .container {
-      max-width: 90%;
-      margin: 60px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 90%; margin: 60px auto; background: #fff; padding: 20px;
+      border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    h1 {
-      color: #28a745;
-      font-size: 1.8rem;
-      margin-bottom: 10px;
+    h1 { color: #28a745; font-size: 1.8rem; }
+    p { font-size: 1rem; color: #333; }
+    .checkmark { font-size: 3.5rem; color: #28a745; }
+    button {
+      margin-top: 25px; padding: 12px 20px; background: #28a745; color: #fff;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: bold;
+      width: 100%; max-width: 280px; cursor: pointer;
     }
-    p {
-      font-size: 1rem;
-      color: #333;
-      line-height: 1.5;
-    }
-    .checkmark {
-      font-size: 3.5rem;
-      color: #28a745;
-    }
-    a.button {
-      display: inline-block;
-      margin-top: 25px;
-      padding: 12px 20px;
-      background: #28a745;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: bold;
-      width: 100%;
-      max-width: 280px;
-    }
-    a.button:hover {
-      background: #218838;
-    }
-    @media (min-width: 768px) {
-      .container {
-        max-width: 500px;
-      }
-      h1 {
-        font-size: 2rem;
-      }
-      .checkmark {
-        font-size: 4rem;
-      }
-    }
+    button:hover { background: #218838; }
   </style>
 </head>
 <body>
@@ -68,9 +26,54 @@
     <div class="checkmark">✔️</div>
     <h1>Thank You!</h1>
     <p>Your campsite booking is confirmed. We can’t wait to welcome you to your outdoor adventure!</p>
-    <a href="https://venturerush.up.railway.app/lite/mk-ai-chatbot/?m=channel-web&v=Fullscreen&options=%7B%22hideWidget%22%3Atrue%2C%22config%22%3A%7B%22enableReset%22%3Atrue%2C%22enableTranscriptDownload%22%3Atrue%7D%7D" class="button">
-      ⬅ Back to Chat
-    </a>
+    <button id="backBtn">⬅ Back to Chat</button>
   </div>
+
+  <script>
+    const BP_EMAIL = "venturerush.cs@gmail.com";
+    const BP_PASSWORD = "venturerush123";
+    const BOT_ID = "mk-ai-chatbot";
+    const FIXED_USER_ID = "e21f3911-4de7-475d-b77a-72064094c172";
+    const BP_URL = "https://venturerush.up.railway.app";
+
+    document.getElementById('backBtn').addEventListener('click', async () => {
+      try {
+        // Step 1: Get Admin JWT Token
+        const tokenRes = await fetch(`${BP_URL}/api/v1/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: BP_EMAIL, password: BP_PASSWORD })
+        });
+        const tokenData = await tokenRes.json();
+        const token = tokenData.payload?.token;
+        if (!token) throw new Error("Failed to get token");
+
+        // Step 2: Get all HITL sessions
+        const sessionsRes = await fetch(`${BP_URL}/api/v1/hitl/sessions`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const sessions = await sessionsRes.json();
+
+        // Step 3: Find session by fixed userId
+        const targetSession = sessions.find(s => s.userId === FIXED_USER_ID);
+        if (!targetSession) throw new Error("No session found for fixed userId");
+
+        // Step 4: Send message to that session
+        await fetch(`${BP_URL}/api/v1/hitl/messages/${targetSession.id}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message: "Thank you" })
+        });
+
+        // Step 5: Redirect to chat
+        window.location.href = `https://venturerush.up.railway.app/lite/${BOT_ID}/?m=channel-web&v=Fullscreen&options=%7B"hideWidget"%3Atrue%2C"config"%3A%7B"enableReset"%3Atrue%2C"enableTranscriptDownload"%3Atrue%7D%7D`;
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
