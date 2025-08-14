@@ -3,57 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Confirmed</title>
+  <title>Payment Successful</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #f8f9fa;
-      margin: 0;
-      padding: 0;
-    }
+    body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f9fa; }
     .container {
-      max-width: 95%;
-      margin: 40px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 90%; margin: 60px auto; background: #fff; padding: 20px;
+      border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    h1 {
-      color: #28a745;
-      font-size: 1.8rem;
-    }
-    p {
-      font-size: 1rem;
-      color: #333;
-      line-height: 1.4;
-    }
-    .checkmark {
-      font-size: 3.5rem;
-      color: #28a745;
-    }
+    h1 { color: #28a745; font-size: 1.8rem; }
+    p { font-size: 1rem; color: #333; }
+    .checkmark { font-size: 3.5rem; color: #28a745; }
     button {
-      margin-top: 25px;
-      padding: 12px 20px;
-      background: #28a745;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: bold;
-      width: 100%;
-      max-width: 280px;
-      cursor: pointer;
+      margin-top: 25px; padding: 12px 20px; background: #28a745; color: #fff;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: bold;
+      width: 100%; max-width: 280px; cursor: pointer;
     }
-    button:hover {
-      background: #218838;
-    }
-    @media (max-width: 600px) {
-      h1 { font-size: 1.4rem; }
-      p { font-size: 0.95rem; }
-      .checkmark { font-size: 3rem; }
-    }
+    button:hover { background: #218838; }
   </style>
 </head>
 <body>
@@ -65,65 +30,52 @@
   </div>
 
   <script>
-    const BP_EMAIL = "venturerush.cs@gmail.com";
-    const BP_PASSWORD = "venturerush123";
     const BOT_ID = "mk-ai-chatbot";
+    const API_BASE = "https://venturerush.up.railway.app/api/v1";
+    const ADMIN_EMAIL = "venturerush.cs@gmail.com";
+    const ADMIN_PASSWORD = "venturerush123";
     const FIXED_USER_ID = "e21f3911-4de7-475d-b77a-72064094c172";
-    const BP_URL = "https://venturerush.up.railway.app";
 
     document.getElementById('backBtn').addEventListener('click', async () => {
       try {
-        // Step 1: Get Admin JWT Token
-        const tokenRes = await fetch(`${BP_URL}/api/v1/auth/login`, {
+        // Step 1: Login & get JWT
+        const loginRes = await fetch(`${API_BASE}/auth/login/basic/default`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: JSON.stringify({ email: BP_EMAIL, password: BP_PASSWORD })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD })
         });
 
-        if (!tokenRes.ok) {
-          throw new Error(`Login failed: ${tokenRes.status}`);
-        }
+        if (!loginRes.ok) throw new Error(`Login failed: ${loginRes.status}`);
+        const loginData = await loginRes.json();
+        const token = loginData.payload?.jwt;
+        if (!token) throw new Error("Failed to retrieve JWT token");
 
-        const tokenData = await tokenRes.json();
-        const token = tokenData.jwt; // Correct field for v12
-        if (!token) throw new Error("Failed to get JWT token");
-
-        // Step 2: Get all HITL sessions
-        const sessionsRes = await fetch(`${BP_URL}/api/v1/hitl/sessions`, {
+        // Step 2: Get HITL sessions
+        const sessionsRes = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (!sessionsRes.ok) {
-          throw new Error(`Get sessions failed: ${sessionsRes.status}`);
-        }
-
+        if (!sessionsRes.ok) throw new Error(`Failed to fetch sessions: ${sessionsRes.status}`);
         const sessions = await sessionsRes.json();
 
-        // Step 3: Find session by fixed userId
+        // Step 3: Find target session
         const targetSession = sessions.find(s => s.userId === FIXED_USER_ID);
         if (!targetSession) throw new Error("No session found for fixed userId");
 
-        // Step 4: Send message to that session
-        const sendRes = await fetch(`${BP_URL}/api/v1/hitl/messages/${targetSession.id}`, {
+        // Step 4: Send message
+        const sendRes = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${targetSession.id}/message`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            message: "🌲 Your booking is confirmed! See you at the campsite soon!"
-          })
+          body: JSON.stringify({ message: "Thank you" })
         });
 
-        if (!sendRes.ok) {
-          throw new Error(`Send message failed: ${sendRes.status}`);
-        }
+        if (!sendRes.ok) throw new Error(`Failed to send message: ${sendRes.status}`);
 
         // Step 5: Redirect to chat
-        window.location.href = `${BP_URL}/lite/${BOT_ID}/?m=channel-web&v=Fullscreen&options=%7B"hideWidget"%3Atrue%2C"config"%3A%7B"enableReset"%3Atrue%2C"enableTranscriptDownload"%3Atrue%7D%7D`;
+        window.location.href = `https://venturerush.up.railway.app/lite/${BOT_ID}/?m=channel-web&v=Fullscreen&options=%7B"hideWidget"%3Atrue%2C"config"%3A%7B"enableReset"%3Atrue%2C"enableTranscriptDownload"%3Atrue%7D%7D`;
 
       } catch (err) {
         alert("Error: " + err.message);
