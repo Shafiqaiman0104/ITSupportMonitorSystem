@@ -351,6 +351,16 @@
           else if (statusLower === "danger") statusClass = "status-danger";
           else if (statusLower === "info") statusClass = "status-info";
 
+          // Get performance and set color
+          const perfText = calcPerformance(row);
+          let perfColor = "";
+          if (perfText) {
+            const perfValue = parseFloat(perfText);
+            if (perfValue <= 50) perfColor = "red";
+            else if (perfValue <= 75) perfColor = "orange";
+            else perfColor = "green";
+          }
+
           tr.innerHTML = `
             <td>${formatMalaysiaTime(row["Timestamp"])}</td>
             <td>${row["Message"]}</td>
@@ -359,7 +369,7 @@
             <td>${row["Conversation Id"]}</td>
             <td>${row["Thread Id"]}</td>
             <td>${formatAlertStatus(row["Alert Status"])}</td>
-            <td>${calcPerformance(row)}</td>
+            <td style="color:${perfColor}; font-weight:bold;">${perfText}</td>
             <td>
               ${row["Alert Status"].startsWith("pending") 
                 ? `<button class="solve" onclick="solveAlert('${row["Conversation Id"]}','${row["Thread Id"]}')">Solve</button>`
