@@ -1,86 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payment Successful</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f9fa; }
-    .container {
-      max-width: 90%; margin: 60px auto; background: #fff; padding: 20px;
-      border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    h1 { color: #28a745; font-size: 1.8rem; }
-    p { font-size: 1rem; color: #333; }
-    .checkmark { font-size: 3.5rem; color: #28a745; }
-    button {
-      margin-top: 25px; padding: 12px 20px; background: #28a745; color: #fff;
-      border: none; border-radius: 8px; font-size: 1rem; font-weight: bold;
-      width: 100%; max-width: 280px; cursor: pointer;
-    }
-    button:hover { background: #218838; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thank You - ToyyinPay</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background: #f3f4f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+  }
+  .container {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    max-width: 350px;
+    width: 90%;
+  }
+  h1 {
+    color: #2e7d32;
+    margin-bottom: 10px;
+  }
+  p {
+    color: #555;
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+  button {
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+  }
+  button:hover {
+    background-color: #1976d2;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="checkmark">✔️</div>
-    <h1>Thank You!</h1>
-    <p>Your campsite booking is confirmed. We can’t wait to welcome you to your outdoor adventure!</p>
-    <button id="backBtn">⬅ Back to Chat</button>
-  </div>
 
-  <script>
-    const BOT_ID = "mk-ai-chatbot";
-    const API_BASE = "https://venturerush.up.railway.app/api/v1";
-    const ADMIN_EMAIL = "venturerush.cs@gmail.com";
-    const ADMIN_PASSWORD = "venturerush123";
-    const FIXED_USER_ID = "e21f3911-4de7-475d-b77a-72064094c172";
+<div class="container">
+  <h1>Thank You!</h1>
+  <p>Your campsite booking is confirmed. We’ll prepare your spot and see you soon!</p>
+  <button onclick="sendThankYou()">Back to Chat</button>
+</div>
 
-    document.getElementById('backBtn').addEventListener('click', async () => {
-      try {
-        // Step 1: Login & get JWT
-        const loginRes = await fetch(`${API_BASE}/auth/login/basic/default`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD })
-        });
+<script>
+const FIXED_USER_ID = "e21f3911-4de7-475d-b77a-72064094c172";
+const CHAT_URL = "https://venturerush.up.railway.app/lite/mk-ai-chatbot/?m=channel-web&v=Fullscreen&options=%7B%22hideWidget%22%3Atrue%2C%22config%22%3A%7B%22enableReset%22%3Atrue%2C%22enableTranscriptDownload%22%3Atrue%7D%7D";
 
-        if (!loginRes.ok) throw new Error(`Login failed: ${loginRes.status}`);
-        const loginData = await loginRes.json();
-        const token = loginData.payload?.jwt;
-        if (!token) throw new Error("Failed to retrieve JWT token");
-
-        // Step 2: Get HITL sessions
-        const sessionsRes = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (!sessionsRes.ok) throw new Error(`Failed to fetch sessions: ${sessionsRes.status}`);
-        const sessions = await sessionsRes.json();
-
-        // Step 3: Find target session
-        const targetSession = sessions.find(s => s.userId === FIXED_USER_ID);
-        if (!targetSession) throw new Error("No session found for fixed userId");
-
-        // Step 4: Send message
-        const sendRes = await fetch(`${API_BASE}/bots/${BOT_ID}/mod/hitl/sessions/${targetSession.id}/message`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ message: "Thank you" })
-        });
-
-        if (!sendRes.ok) throw new Error(`Failed to send message: ${sendRes.status}`);
-
-        // Step 5: Redirect to chat
-        window.location.href = `https://venturerush.up.railway.app/lite/${BOT_ID}/?m=channel-web&v=Fullscreen&options=%7B"hideWidget"%3Atrue%2C"config"%3A%7B"enableReset"%3Atrue%2C"enableTranscriptDownload"%3Atrue%7D%7D`;
-
-      } catch (err) {
-        alert("Error: " + err.message);
-      }
+async function sendThankYou() {
+  try {
+    // 1. Login to get JWT
+    const loginRes = await fetch("https://venturerush.up.railway.app/api/v1/auth/login/basic/default", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "venturerush.cs@gmail.com",
+        password: "venturerush123"
+      })
     });
-  </script>
+    const loginData = await loginRes.json();
+    const jwt = loginData.payload.jwt;
+
+    // 2. Get sessions
+    const sessionsRes = await fetch("https://venturerush.up.railway.app/api/v1/bots/mk-ai-chatbot/mod/hitl/sessions", {
+      headers: { "Authorization": `Bearer ${jwt}` }
+    });
+    const sessions = await sessionsRes.json();
+
+    // 3. Find session for fixed userId
+    const session = sessions.find(s => s.user?.id === FIXED_USER_ID);
+    if (!session) {
+      alert("No session found for this user.");
+      window.location.href = CHAT_URL;
+      return;
+    }
+
+    // 4. Send message to that session
+    await fetch(`https://venturerush.up.railway.app/api/v1/bots/mk-ai-chatbot/mod/hitl/sessions/${session.id}/messages`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${jwt}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: "Thank you" })
+    });
+
+    // 5. Redirect to chat
+    window.location.href = CHAT_URL;
+
+  } catch (err) {
+    console.error(err);
+    window.location.href = CHAT_URL;
+  }
+}
+</script>
+
 </body>
 </html>
