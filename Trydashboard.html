@@ -128,10 +128,10 @@
 
       const labels = Object.keys(monthCountsByStatus).sort((a, b) => monthKeys[a].localeCompare(monthKeys[b]));
 
-      // ✅ Use raw counts instead of percentages
       const infoData = labels.map(m => monthCountsByStatus[m].Info);
       const warningData = labels.map(m => monthCountsByStatus[m].Warning);
       const dangerData = labels.map(m => monthCountsByStatus[m].Danger);
+      const totalData = labels.map(m => monthCountsByStatus[m].Info + monthCountsByStatus[m].Warning + monthCountsByStatus[m].Danger);
 
       const avgPerformance = labels.map(m => {
         if (!monthPerformance[m] || monthPerformance[m].length === 0) return 0;
@@ -151,12 +151,12 @@
       const avg7 = last7Perf.length ? (last7Perf.reduce((a,b)=>a+b,0)/last7Perf.length).toFixed(1) : 0;
       document.getElementById("last7DaysPerf").textContent = avg7 + "%";
 
-      renderErrorChart(labels, infoData, warningData, dangerData);
+      renderErrorChart(labels, infoData, warningData, dangerData, totalData);
       renderPerformanceChart(labels, avgPerformance);
       renderLast7DaysChart(last7Labels, last7Perf);
     }
 
-    function renderErrorChart(labels, infoData, warningData, dangerData) {
+    function renderErrorChart(labels, infoData, warningData, dangerData, totalData) {
       new Chart(document.getElementById('errorChart'), {
         type: 'bar',
         data: {
@@ -164,7 +164,8 @@
           datasets: [
             { label: 'Info', data: infoData, backgroundColor: '#17a2b8', borderRadius: 6 },
             { label: 'Warning', data: warningData, backgroundColor: '#ffc107', borderRadius: 6 },
-            { label: 'Danger', data: dangerData, backgroundColor: '#dc3545', borderRadius: 6 }
+            { label: 'Danger', data: dangerData, backgroundColor: '#dc3545', borderRadius: 6 },
+            { label: 'Total', data: totalData, backgroundColor: '#28a745', borderRadius: 6 }
           ]
         },
         options: {
