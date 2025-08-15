@@ -48,7 +48,7 @@
   </div>
 
   <div class="container">
-    <h1>📊 Monthly Errors (by Status)</h1>
+    <h1>📊 Monthly Errors</h1>
     <canvas id="errorChart"></canvas>
   </div>
 
@@ -90,7 +90,6 @@
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         monthKeys[monthYear] = monthKey;
 
-        // Group counts by status
         const status = row["Status"] ? row["Status"].trim() : "Unknown";
         if (!monthCountsByStatus[monthYear]) {
           monthCountsByStatus[monthYear] = { Info: 0, Warning: 0, Danger: 0 };
@@ -101,7 +100,6 @@
           
         totalErrors++;
 
-        // Performance calculation
         if (row["Alert Status"] && row["Alert Status"].startsWith("solve")) {
           const solveString = row["Alert Status"].replace(/^solve\s+/i, "").trim();
           const solveDate = new Date(solveString);
@@ -206,9 +204,9 @@
             label: 'Performance (%)',
             data: performance,
             borderColor: '#ff9800',
-            backgroundColor: '#ff9800',
+            backgroundColor: 'rgba(255, 152, 0, 0.2)', // transparent fill
             tension: 0.4,
-            fill: false
+            fill: true
           }]
         },
         options: {
