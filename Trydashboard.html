@@ -5,89 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { 
-      font-family: 'Segoe UI', Tahoma, sans-serif; 
-      margin: 0; 
-      background: #f4f6f8;
-      color: #333;
-    }
-    .navbar {
-      background: #007bff;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .navbar .logo {
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .navbar ul {
-      list-style: none;
-      display: flex;
-      gap: 15px;
-      margin: 0;
-      padding: 0;
-    }
-    .navbar ul li a {
-      color: white;
-      text-decoration: none;
-      padding: 6px 10px;
-      border-radius: 4px;
-      transition: background 0.2s ease;
-    }
-    .navbar ul li a:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    .container {
-      width: 85%;
-      max-width: 800px;
-      margin: 20px auto;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      padding: 15px;
-    }
-    .cards {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      margin: 20px auto;
-      width: 85%;
-      max-width: 800px;
-    }
-    .card {
-      flex: 1;
-      min-width: 150px;
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .card h2 {
-      margin: 0;
-      font-size: 24px;
-      color: #007bff;
-    }
-    .card p {
-      margin: 5px 0 0;
-      color: #666;
-      font-size: 14px;
-    }
-    h1 { 
-      text-align: center; 
-      margin-bottom: 15px;
-      font-size: 20px;
-    }
-    canvas {
-      max-width: 100%;
-    }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f4f6f8; color: #333; }
+    .navbar { background: #007bff; color: white; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .navbar .logo { font-size: 18px; font-weight: bold; }
+    .navbar ul { list-style: none; display: flex; gap: 15px; margin: 0; padding: 0; }
+    .navbar ul li a { color: white; text-decoration: none; padding: 6px 10px; border-radius: 4px; transition: background 0.2s ease; }
+    .navbar ul li a:hover { background: rgba(255,255,255,0.2); }
+    .container { width: 85%; max-width: 800px; margin: 20px auto; background: white; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 15px; }
+    .cards { display: flex; gap: 15px; flex-wrap: wrap; margin: 20px auto; width: 85%; max-width: 800px; }
+    .card { flex: 1; min-width: 150px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+    .card h2 { margin: 0; font-size: 24px; color: #007bff; }
+    .card p { margin: 5px 0 0; color: #666; font-size: 14px; }
+    h1 { text-align: center; margin-bottom: 15px; font-size: 20px; }
+    canvas { max-width: 100%; }
   </style>
 </head>
 <body>
@@ -134,14 +64,14 @@
 
   <script>
     const scriptUrl = "https://script.google.com/macros/s/AKfycbxqbrfz2owYrB3vaHJnXRmdyO6xYWA5YbRYTrjQEsUAm04FOkUeQrUM6PsNeGQtbLcs/exec";
-    
+      
     async function fetchData() {
       const res = await fetch(scriptUrl);
       const data = await res.json();
 
       const monthCountsByStatus = {};
       const monthPerformance = {};
-      const monthKeys = {}; 
+      const monthKeys = {};   
       const last7Days = {};
 
       let totalErrors = 0;
@@ -168,7 +98,7 @@
         if (status === "Info") monthCountsByStatus[monthYear].Info++;
         if (status === "Warning") monthCountsByStatus[monthYear].Warning++;
         if (status === "DANGER") monthCountsByStatus[monthYear].Danger++;
-        
+          
         totalErrors++;
 
         // Performance calculation
@@ -198,9 +128,10 @@
 
       const labels = Object.keys(monthCountsByStatus).sort((a, b) => monthKeys[a].localeCompare(monthKeys[b]));
 
-      const infoData = labels.map(m => monthCountsByStatus[m].Info / 3);
-      const warningData = labels.map(m => monthCountsByStatus[m].Warning / 3);
-      const dangerData = labels.map(m => monthCountsByStatus[m].Danger / 3);
+      // ✅ Use raw counts instead of percentages
+      const infoData = labels.map(m => monthCountsByStatus[m].Info);
+      const warningData = labels.map(m => monthCountsByStatus[m].Warning);
+      const dangerData = labels.map(m => monthCountsByStatus[m].Danger);
 
       const avgPerformance = labels.map(m => {
         if (!monthPerformance[m] || monthPerformance[m].length === 0) return 0;
@@ -215,7 +146,7 @@
       });
 
       document.getElementById("totalErrors").textContent = totalErrors;
-      document.getElementById("avgPerformance").textContent = 
+      document.getElementById("avgPerformance").textContent =   
         thisMonthPerfCount ? (thisMonthPerfSum / thisMonthPerfCount).toFixed(1) + "%" : "0%";
       const avg7 = last7Perf.length ? (last7Perf.reduce((a,b)=>a+b,0)/last7Perf.length).toFixed(1) : 0;
       document.getElementById("last7DaysPerf").textContent = avg7 + "%";
@@ -290,4 +221,4 @@
     fetchData();
   </script>
 </body>
-      </html>
+  </html>
