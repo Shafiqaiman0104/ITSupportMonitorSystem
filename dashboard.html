@@ -92,9 +92,9 @@
 
         const status = row["Status"] ? row["Status"].trim() : "Unknown";
         if (!monthCountsByStatus[monthYear]) {
-          monthCountsByStatus[monthYear] = { Info: 0, Warning: 0, Danger: 0 };
+          monthCountsByStatus[monthYear] = { Assist: 0, Warning: 0, Danger: 0 };
         }
-        if (status === "Info") monthCountsByStatus[monthYear].Info++;
+        if (status === "Assist") monthCountsByStatus[monthYear].Assist++;
         if (status === "Warning") monthCountsByStatus[monthYear].Warning++;
         if (status === "DANGER") monthCountsByStatus[monthYear].Danger++;
           
@@ -126,10 +126,10 @@
 
       const labels = Object.keys(monthCountsByStatus).sort((a, b) => monthKeys[a].localeCompare(monthKeys[b]));
 
-      const infoData = labels.map(m => monthCountsByStatus[m].Info);
+      const assistData = labels.map(m => monthCountsByStatus[m].Assist);
       const warningData = labels.map(m => monthCountsByStatus[m].Warning);
       const dangerData = labels.map(m => monthCountsByStatus[m].Danger);
-      const totalData = labels.map(m => monthCountsByStatus[m].Info + monthCountsByStatus[m].Warning + monthCountsByStatus[m].Danger);
+      const totalData = labels.map(m => monthCountsByStatus[m].Assist + monthCountsByStatus[m].Warning + monthCountsByStatus[m].Danger);
 
       const avgPerformance = labels.map(m => {
         if (!monthPerformance[m] || monthPerformance[m].length === 0) return 0;
@@ -149,18 +149,18 @@
       const avg7 = last7Perf.length ? (last7Perf.reduce((a,b)=>a+b,0)/last7Perf.length).toFixed(1) : 0;
       document.getElementById("last7DaysPerf").textContent = avg7 + "%";
 
-      renderErrorChart(labels, infoData, warningData, dangerData, totalData);
+      renderErrorChart(labels, assistData, warningData, dangerData, totalData);
       renderPerformanceChart(labels, avgPerformance);
       renderLast7DaysChart(last7Labels, last7Perf);
     }
 
-    function renderErrorChart(labels, infoData, warningData, dangerData, totalData) {
+    function renderErrorChart(labels, assistData, warningData, dangerData, totalData) {
       new Chart(document.getElementById('errorChart'), {
         type: 'bar',
         data: {
           labels: labels,
           datasets: [
-            { label: 'Info', data: infoData, backgroundColor: '#17a2b8', borderRadius: 6 },
+            { label: 'Assist', data: assistData, backgroundColor: '#17a2b8', borderRadius: 6 },
             { label: 'Warning', data: warningData, backgroundColor: '#ffc107', borderRadius: 6 },
             { label: 'Danger', data: dangerData, backgroundColor: '#dc3545', borderRadius: 6 },
             { label: 'Total', data: totalData, backgroundColor: '#28a745', borderRadius: 6 }
