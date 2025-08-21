@@ -168,7 +168,7 @@
       padding: 4px 8px;
       display: inline-block;
     }
-    .status-info {
+    .status-assist {
       background-color: #d1ecf1;
       color: #0c5460;
       font-weight: bold;
@@ -357,7 +357,7 @@
           const statusLower = row["Status"].toLowerCase();
           if (statusLower === "warning") statusClass = "status-warning";
           else if (statusLower === "danger") statusClass = "status-danger";
-          else if (statusLower === "info") statusClass = "status-info";
+          else if (statusLower === "assist") statusClass = "status-assist";
 
           // Get performance and set color
           const perfText = calcPerformance(row);
