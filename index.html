@@ -351,6 +351,8 @@
             : true;
           return matchesSearch && matchesStatus && matchesMonth;
         })
+          // 🔽 Sort by Timestamp (latest first)
+    .sort((a, b) => new Date(b["Timestamp"]) - new Date(a["Timestamp"]))
         .forEach(row => {
           const tr = document.createElement("tr");
           let statusClass = "";
