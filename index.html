@@ -176,6 +176,14 @@
       padding: 4px 8px;
       display: inline-block;
     }
+    .status-info {
+  background-color: #e6e6ff;
+  color: #4b4b96;
+  font-weight: bold;
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: inline-block;
+}
 
     @media (max-width: 768px) {
       .container {
@@ -360,6 +368,7 @@
           if (statusLower === "warning") statusClass = "status-warning";
           else if (statusLower === "danger") statusClass = "status-danger";
           else if (statusLower === "assist") statusClass = "status-assist";
+          else if (statusLower === "info") statusClass = "status-info"; // Add this line
 
           // Get performance and set color
           const perfText = calcPerformance(row);
