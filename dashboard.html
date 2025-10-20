@@ -92,11 +92,12 @@
 
         const status = row["Status"] ? row["Status"].trim() : "Unknown";
         if (!monthCountsByStatus[monthYear]) {
-          monthCountsByStatus[monthYear] = { Assist: 0, Warning: 0, Danger: 0 };
+          monthCountsByStatus[monthYear] = { Assist: 0, Warning: 0, Danger: 0, Info: 0 };
         }
         if (status === "Assist") monthCountsByStatus[monthYear].Assist++;
         if (status === "Warning") monthCountsByStatus[monthYear].Warning++;
         if (status === "DANGER") monthCountsByStatus[monthYear].Danger++;
+        if (status === "info") monthCountsByStatus[monthYear].Info++;
           
         totalErrors++;
 
@@ -129,7 +130,8 @@
       const assistData = labels.map(m => monthCountsByStatus[m].Assist);
       const warningData = labels.map(m => monthCountsByStatus[m].Warning);
       const dangerData = labels.map(m => monthCountsByStatus[m].Danger);
-      const totalData = labels.map(m => monthCountsByStatus[m].Assist + monthCountsByStatus[m].Warning + monthCountsByStatus[m].Danger);
+      const infoData = labels.map(m => monthCountsByStatus[m].Info); // Add this line
+      const totalData = labels.map(m => monthCountsByStatus[m].Assist + monthCountsByStatus[m].Warning + monthCountsByStatus[m].Danger + monthCountsByStatus[m].Info); // Update total
 
       const avgPerformance = labels.map(m => {
         if (!monthPerformance[m] || monthPerformance[m].length === 0) return 0;
@@ -149,12 +151,12 @@
       const avg7 = last7Perf.length ? (last7Perf.reduce((a,b)=>a+b,0)/last7Perf.length).toFixed(1) : 0;
       document.getElementById("last7DaysPerf").textContent = avg7 + "%";
 
-      renderErrorChart(labels, assistData, warningData, dangerData, totalData);
+      renderErrorChart(labels, assistData, warningData, dangerData, infoData, totalData);
       renderPerformanceChart(labels, avgPerformance);
       renderLast7DaysChart(last7Labels, last7Perf);
     }
 
-    function renderErrorChart(labels, assistData, warningData, dangerData, totalData) {
+    function renderErrorChart(labels, assistData, warningData, dangerData, infoData, totalData) {
       new Chart(document.getElementById('errorChart'), {
         type: 'bar',
         data: {
@@ -163,6 +165,7 @@
             { label: 'Assist', data: assistData, backgroundColor: '#17a2b8', borderRadius: 6 },
             { label: 'Warning', data: warningData, backgroundColor: '#ffc107', borderRadius: 6 },
             { label: 'Danger', data: dangerData, backgroundColor: '#dc3545', borderRadius: 6 },
+            { label: 'Info', data: infoData, backgroundColor: '#e6e6ff', borderRadius: 6 }, // Add this line
             { label: 'Total', data: totalData, backgroundColor: '#28a745', borderRadius: 6 }
           ]
         },
